@@ -1,11 +1,4 @@
-import 'package:equatable/equatable.dart';
-
-abstract class GameState extends Equatable {
-  const GameState();
-
-  @override
-  List<Object> get props => [];
-}
+abstract class GameState {}
 
 class GameInitialState extends GameState {}
 
@@ -21,7 +14,7 @@ class GameLoadedState extends GameState {
   final bool isSpecialCharacter;
   final bool isDeviceBroken;
 
-  const GameLoadedState({
+  GameLoadedState({
     required this.grid,
     required this.hiddenTreasures,
     required this.playerRow,
@@ -32,15 +25,25 @@ class GameLoadedState extends GameState {
     required this.isDeviceBroken,
   });
 
-  @override
-  List<Object> get props => [
-    grid,
-    hiddenTreasures,
-    playerRow,
-    playerCol,
-    currentBalance,
-    totalBalance,
-    isSpecialCharacter,
-    isDeviceBroken,
-  ];
+  GameLoadedState copyWith({
+    List<List<String>>? grid,
+    List<List<String>>? hiddenTreasures,
+    int? playerRow,
+    int? playerCol,
+    int? currentBalance,
+    int? totalBalance,
+    bool? isSpecialCharacter,
+    bool? isDeviceBroken,
+  }) {
+    return GameLoadedState(
+      grid: grid ?? this.grid,
+      hiddenTreasures: hiddenTreasures ?? this.hiddenTreasures,
+      playerRow: playerRow ?? this.playerRow,
+      playerCol: playerCol ?? this.playerCol,
+      currentBalance: currentBalance ?? this.currentBalance,
+      totalBalance: totalBalance ?? this.totalBalance,
+      isSpecialCharacter: isSpecialCharacter ?? this.isSpecialCharacter,
+      isDeviceBroken: isDeviceBroken ?? this.isDeviceBroken,
+    );
+  }
 }

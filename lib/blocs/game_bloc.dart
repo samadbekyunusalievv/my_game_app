@@ -1,11 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import 'game_events.dart';
 import 'game_state.dart';
 import 'dart:math';
 import 'package:flutter/material.dart';
-
-
 
 class GameBloc extends Bloc<GameEvent, GameState> {
   GameBloc() : super(GameInitialState()) {
@@ -16,6 +13,9 @@ class GameBloc extends Bloc<GameEvent, GameState> {
     on<UpdateDeviceStatusEvent>(_onUpdateDeviceStatus);
     on<ResetGameEvent>(_onResetGame);
   }
+  int? previousRow;
+  int? previousCol;
+  String? _treasure;
 
   void _onInitializeGame(InitializeGameEvent event, Emitter<GameState> emit) {
     emit(GameLoadingState());
@@ -50,10 +50,21 @@ class GameBloc extends Bloc<GameEvent, GameState> {
       bool isSpecialCharacter = currentState.isSpecialCharacter;
       bool isDeviceBroken = currentState.isDeviceBroken;
 
-      grid[playerRow][playerCol] = playerRow == 0 && playerCol == 0 ? 'assets/start.png' : 'assets/visited.png';
+
+      // Update the previous position to 'assets/visited.png' or the treasure image if found
+      if (currentState.playerRow == 0 && currentState.playerCol == 0) {
+        grid[currentState.playerRow][currentState.playerCol] = 'assets/start.png';
+      } else {
+        String previousImage = grid[currentState.playerRow][currentState.playerCol];
+        if (hiddenTreasures[currentState.playerRow][currentState.playerCol].isNotEmpty) {
+          previousImage = hiddenTreasures[currentState.playerRow][currentState.playerCol];
+        }
+        grid[currentState.playerRow][currentState.playerCol] = previousImage == 'assets/player.png' ? 'assets/visited.png' : previousImage;
+      }
+
+      // Move the player to the new position
       playerRow = event.newRow;
       playerCol = event.newCol;
-      grid[playerRow][playerCol] = 'assets/player.png';
 
       String treasure = hiddenTreasures[playerRow][playerCol];
       if (treasure.isNotEmpty) {
@@ -86,6 +97,19 @@ class GameBloc extends Bloc<GameEvent, GameState> {
         if (value > 0) {
           _showTreasureDialog(event.context, treasure);
         }
+        // grid[playerRow][playerCol] = treasure; // Ensure player image is on top
+        previousRow = playerRow;
+        previousCol = playerCol;
+        _treasure = treasure;
+        grid[playerRow][playerCol] = 'assets/player.png';
+      } else {
+        if(previousRow != null && previousCol != null && _treasure != null){
+          grid[previousRow!][previousCol!] = _treasure!;
+          previousRow = null;
+          previousCol = null;
+          _treasure = null;
+        }
+        grid[playerRow][playerCol] = 'assets/player.png'; // Set the grid cell to the player image if no treasure
       }
 
       if (playerRow == 0 && playerCol == 0) {
